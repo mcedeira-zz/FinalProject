@@ -2,20 +2,25 @@ public class HelperAccountTrigger {
 
     public static void accountUpdate(List<Account> triggerNew, Map<Id, Account> triggerOldMap){
         
-        //Data
-        Map<String, Territory__c> salesRep = new Map<String, Territory__c>();
-        for(Territory__c t : [SELECT Name, Owner__c FROM Territory__c WITH SECURITY_ENFORCED]){
-            salesRep.put(t.Name, t);
-        }
+        List<Territory__c> territoriesList = [SELECT Name, Owner__c FROM Territory__c WITH SECURITY_ENFORCED];
 
         //Actual logic
         for(Account acct : triggerNew){
+
             Account oldAcct = triggerOldMap.get(acct.Id);
             if(acct.BillingPostalCode != oldAcct.BillingPostalCode){
-                    Territory__c owner = salesRep.get(acct.BillingPostalCode);
-                    if(owner != null){
-                        acct.OwnerId = owner.Owner__c;
+                List<String> salesReps = new List<String>();
+                for(Territory__c sR : territoriesList){
+
+                    if(sR.Name == acct.BillingPostalCode){
+                        salesReps.add(sR.Owner__c);
                     }
+                }
+                // Utils.randomSalesRep()
+                String randomizedRep = Utils.randomSalesRep(salesReps);
+                if(randomizedRep != null){
+                    acct.OwnerId = randomizedRep;
+                }
             } 
         }
     }
@@ -26,7 +31,9 @@ public class HelperAccountTrigger {
         List<Contact> contactsList = [SELECT AccountId, OwnerId FROM Contact WHERE AccountId IN :acctsForContacts WITH SECURITY_ENFORCED];
 
         for(Account acct : acctsForContacts){
+
             for(Contact c : contactsList){
+            
                 if(c.AccountId == acct.Id){
                     c.OwnerId = acct.OwnerId;
                     contactsToUpd.add(c);
@@ -42,6 +49,7 @@ public class HelperAccountTrigger {
         List<Opportunity> opportunitiesList = [SELECT AccountId, OwnerId, StageName FROM Opportunity WHERE AccountId IN :acctsForOpps WITH SECURITY_ENFORCED];
 
         for(Account acct : acctsForOpps){
+            
             for(Opportunity o : opportunitiesList){
                 if(o.AccountId == acct.Id){
                     if(o.StageName != 'Closed Won' && o.StageName != 'Closed Lost'){
