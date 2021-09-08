@@ -2,7 +2,7 @@ public class HelperAccountTrigger {
 
     public static void accountUpdate(List<Account> triggerNew, Map<Id, Account> triggerOldMap){
         
-        List<Territory__c> territoriesList = [SELECT Name, Owner__c FROM Territory__c WITH SECURITY_ENFORCED];
+        List<Territory__c> territoriesList = [SELECT Name, OwnerId FROM Territory__c WITH SECURITY_ENFORCED];
 
         //Actual logic
         for(Account acct : triggerNew){
@@ -13,7 +13,7 @@ public class HelperAccountTrigger {
                 for(Territory__c sR : territoriesList){
 
                     if(sR.Name == acct.BillingPostalCode){
-                        salesReps.add(sR.Owner__c);
+                        salesReps.add(sR.OwnerId);
                     }
                 }
                 // Utils.randomSalesRep()
