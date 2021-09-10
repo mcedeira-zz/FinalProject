@@ -2,7 +2,7 @@ trigger AccountTrigger on Account (after insert, after update, before update, be
 
    if(Trigger.isBefore){
         if(Trigger.isUpdate){
-            HelperAccountTrigger.accountUpdate(Trigger.new, Trigger.oldMap);
+            HelperAccountTrigger.accountUpdate(Trigger.oldMap, Trigger.new);
         }    
     }
     
@@ -10,6 +10,7 @@ trigger AccountTrigger on Account (after insert, after update, before update, be
         if(Trigger.isUpdate){
             HelperAccountTrigger.contactsUpdate(Trigger.new);
             HelperAccountTrigger.oppsUpdate(Trigger.new);    
+            HelperAccountTrigger.assignmentCreation(Trigger.oldMap, Trigger.new);
         }
     }
 }

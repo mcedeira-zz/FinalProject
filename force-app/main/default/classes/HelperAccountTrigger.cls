@@ -1,6 +1,6 @@
-public class HelperAccountTrigger {
+public with sharing class HelperAccountTrigger {
 
-    public static void accountUpdate(List<Account> triggerNew, Map<Id, Account> triggerOldMap){
+    public static void accountUpdate(Map<Id, Account> triggerOldMap, List<Account> triggerNew){
         
         List<Territory__c> territoriesList = [SELECT Name, OwnerId FROM Territory__c WITH SECURITY_ENFORCED];
 
@@ -16,7 +16,6 @@ public class HelperAccountTrigger {
                         salesReps.add(sR.OwnerId);
                     }
                 }
-                // Utils.randomSalesRep()
                 String randomizedRep = Utils.randomSalesRep(salesReps);
                 if(randomizedRep != null){
                     acct.OwnerId = randomizedRep;
@@ -60,5 +59,46 @@ public class HelperAccountTrigger {
             }
         }
         update oppsToUpd;
+    }
+
+    public static void assignmentCreation(Map<Id, Account> oldAcctsMap, List<Account> newAcctsList){
+        
+        List<Assignment_History__c> recordsToCreate = new List<Assignment_History__c>();
+        
+        Map<String, Territory__c> oldOwnersMap = Utils.oldOwners(oldAcctsMap.values());
+        Map<Id, Territory__c> newOwnersMap = Utils.owners(newAcctsList);
+        
+        for(Account acct : newAcctsList){
+            Account oldAcct = oldAcctsMap.get(acct.Id);
+            if(acct.BillingPostalCode != oldAcct.BillingPostalCode){
+                
+                for(Territory__c newOwner : newOwnersMap.values()){
+                    if(acct.OwnerId == newOwner.OwnerId && acct.BillingPostalCode == newOwner.Name){                       
+                        // system.debug(newOwner);
+                        // system.debug(oldOwnersMap.get(acct.Id));
+                        Territory__c oldOwner = oldOwnersMap.get(acct.Id);
+
+                        Assignment_History__c newAssignment = new Assignment_History__c();
+                            
+                        if(oldOwner != null){
+                            newAssignment.Name = 'Assignment of ' +acct.Name+ ' from: ' +oldOwner.Owner.Name+ ' to: ' +newOwner.Owner.Name;
+                            newAssignment.Previous_Territory__c = oldOwner.Id; //Old Territory Id  
+                        }
+                        else{
+                            newAssignment.Name = 'Assignment of ' +acct.Name+ ' to: ' +newOwner.Owner.Name;
+                            newAssignment.Previous_Territory__c = null;
+                        }
+                            newAssignment.Account__c = acct.Id;
+                            newAssignment.Previous_Owner__c = oldAcct.OwnerId;	
+                            newAssignment.New_Owner__c = acct.OwnerId;
+                            newAssignment.New_Territory__c = newOwner.Id; //New Territory Id
+                            newAssignment.Changed_By__c = UserInfo.getUserId();
+                            
+                        recordsToCreate.add(newAssignment);
+                    }
+                }
+            }
+        }
+        insert recordsToCreate;
     }
 }
