@@ -5,7 +5,7 @@ public with sharing class Utils {
         Integer randomNumber = Integer.valueof((Math.random() * values.size()));
         String randomizedResult = values[randomNumber]; 
 
-        return randomizedResult;
+        return randomizedResult;   
     }
 
     public static Map<Id, Territory__c> owners(List<Account> accounts){ 
@@ -51,4 +51,5 @@ public with sharing class Utils {
                    
         return oldOwnersMap;
     }
+    // Territory Trigger
 }
