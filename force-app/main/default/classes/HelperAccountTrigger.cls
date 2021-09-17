@@ -29,6 +29,10 @@ public with sharing class HelperAccountTrigger {
                 else{
                     acct.OwnerId = salesReps[0]; 
                 }
+                //Send to old owner
+                Utils.sendEmail(oldAcct.OwnerId, oldAcct.Id);
+                //Send mail to new owner
+                Utils.sendEmail(acct.OwnerId, acct.Id);
             } 
         }
     }

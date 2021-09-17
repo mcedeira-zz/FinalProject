@@ -51,5 +51,32 @@ public with sharing class Utils {
                    
         return oldOwnersMap;
     }
-    // Territory Trigger
+
+    public static void sendEmail(String OwnerId, String acctId){
+
+        Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage(); 
+        EmailTemplate emailTemplate = [SELECT Id, Subject, Description, HtmlValue, DeveloperName, Body FROM EmailTemplate WHERE Name = 'VF Billing Postal Code Change' WITH SECURITY_ENFORCED];
+
+        User usr = [SELECT Id, Email FROM User WHERE Id = :OwnerId WITH SECURITY_ENFORCED];        
+        List<String> address = new String[] {usr.Email};
+
+        mail.setTemplateId(emailTemplate.Id);
+        mail.setTargetObjectId(OwnerId); 
+
+        mail.setWhatId(acctId);
+        mail.setBccSender(false); 
+        mail.setUseSignature(false); 
+        mail.setSenderDisplayName('MatiaS'); 
+        mail.setSaveAsActivity(false); 
+        mail.setReplyTo('no-reply@company.com');
+
+        Messaging.SendEmailResult[] results = Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+
+        if (results[0].success){
+            System.debug('The email was sent successfully.');
+        } 
+        else {
+            System.debug('The email failed to send: ' +results[0].errors[0].message);
+        }
+    }
 }
