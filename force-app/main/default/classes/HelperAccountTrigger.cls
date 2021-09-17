@@ -10,15 +10,24 @@ public with sharing class HelperAccountTrigger {
             Account oldAcct = triggerOldMap.get(acct.Id);
             if(acct.BillingPostalCode != oldAcct.BillingPostalCode){
                 List<String> salesReps = new List<String>();
+      
                 for(Territory__c sR : territoriesList){
 
                     if(sR.Name == acct.BillingPostalCode){
                         salesReps.add(sR.OwnerId);
                     }
                 }
-                String randomizedRep = Utils.randomSalesRep(salesReps);
-                if(randomizedRep != null){
-                    acct.OwnerId = randomizedRep;
+                // system.debug(salesReps.size());
+                // system.debug(salesReps);
+
+                if(salesReps.size() > 1){
+                    String randomizedRep = Utils.randomSalesRep(salesReps);
+                    if(randomizedRep != null){
+                        acct.OwnerId = randomizedRep;
+                    }
+                }
+                else{
+                    acct.OwnerId = salesReps[0]; 
                 }
             } 
         }
