@@ -2,10 +2,10 @@ trigger TerritoryTrigger on Territory__c (before insert, before update, after up
 
     if(Trigger.isBefore){
         if(Trigger.isInsert){
-            HelperTerritoryTrigger.singleZipCodeAssigned(Trigger.new);
+            HelperTerritoryTrigger.zipCodeAssignment(Trigger.new);
         }   
         if(Trigger.isUpdate){
-            HelperTerritoryTrigger.singleZipCodeAssigned(Trigger.new);
+            HelperTerritoryTrigger.zipCodeAssignment(Trigger.new);
         }
     }
 
